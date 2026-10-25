@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.Item;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.BsXinQin.kinswathe.KinsWatheConfig;
+import org.BsXinQin.kinswathe.KinsWatheRoles;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +20,9 @@ public class KillerNoBackfireMixin {
     private static void noKillerBackfire(ServerPlayNetworking.Context context, @NotNull ServerPlayerEntity player, Item revolver, @NotNull CallbackInfo ci) {
         if (!KinsWatheConfig.HANDLER.instance().EnableWatheModify || !KinsWatheConfig.HANDLER.instance().PreventKillerDropRevolver) return;
         GameWorldComponent gameWorld = GameWorldComponent.KEY.get(player.getWorld());
-        if (gameWorld.canUseKillerFeatures(player) && GameFunctions.isPlayerAliveAndSurvival(player)) {
+        boolean exempt = gameWorld.canUseKillerFeatures(player)
+                || gameWorld.isRole(player, KinsWatheRoles.LICENSED_VILLAIN);
+        if (exempt && GameFunctions.isPlayerAliveAndSurvival(player)) {
             ci.cancel();
         }
     }
